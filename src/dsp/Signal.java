@@ -171,7 +171,7 @@ public class Signal {
         Signal signal = new Signal("samples.txt");
 
         Signal signal2 = new Signal("samples");
-        System.out.println("signal 1: " + signal);
+        System.out.println("signal 1wheee: " + signal);
         System.out.println("signal 2: " + signal2);
 
 
