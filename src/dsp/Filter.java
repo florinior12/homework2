@@ -1,17 +1,23 @@
 package dsp;
 
+
 /**
- * Created by Florin on 1/6/2017.
+ * Name: Iordache Florin
+ * Group: 422G
+ * Homework: 2
  */
 public class Filter extends Element {
     private double[] samples;
+
+    //besides input and output, we have an array of samples, the system's finite impulse response
     public Filter(Signal out, Signal in, double[] samples) {
         output = out;
         singleInput = in;
         this.samples = samples;
     }
 
+    @Override
     public void compute() {
-        output.copy(singleInput.convolve(new Signal(samples)));
+        output.copy(singleInput.convolve(new Signal(samples))); //compute uses Signal's convolve method
     }
 }

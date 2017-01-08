@@ -1,11 +1,15 @@
 package dsp;
 
+
 /**
- * Created by Florin on 1/6/2017.
+ * Name: Iordache Florin
+ * Group: 422G
+ * Homework: 2
  */
-public class Gain extends Element{
+public class Gain extends Element {
     private double gain;
-    public Gain(Signal out, Signal in, double gain) {
+
+    public Gain(Signal out, Signal in, double gain) {   //Besides input and output, we have a scalar value gain
         output = out;
         singleInput = in;
         this.gain = gain;
@@ -13,6 +17,6 @@ public class Gain extends Element{
 
     @Override
     public void compute() {
-        output.copy(singleInput.scale(gain));
+        output.copy(singleInput.scale(gain));   //compute uses Signal's scale method
     }
 }

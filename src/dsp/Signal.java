@@ -3,67 +3,70 @@ package dsp;
 import java.io.*;
 
 
-
 /**
- * Created by Florin on 12/30/2016.
+ * Name: Iordache Florin
+ * Group: 422G
+ * Homework: 2
  */
 public class Signal {
-    private double[] samples;
+    private double[] samples;   //Array of type double which contains samples
 
-    public Signal() {      //EMPTY SIGNAL
+    public Signal() {      //Default constructor creates an empty signal, with no samples
         this.samples = null;
     }
 
-    public Signal(double[] samples) {  //SAMPLES READ FROM KEYBOARD
+    public Signal(double[] samples) {  //Constructor that creates a signal with samples given as array argument
         this.samples = samples;
     }
 
-    public Signal(String fileName) throws IOException {    //SAMPLES READ FROM FILE
+    public Signal(String fileName) throws IOException {    //Constructor that reads samples from file
         BufferedReader bf =
-                new BufferedReader(new FileReader(fileName));
+                new BufferedReader(new FileReader(fileName));   //Instantiates a buffered reader for the file
 
-        StringBuilder sb = new StringBuilder();
-        String text = bf.readLine();
+        StringBuilder sb = new StringBuilder(); //We will use a StringBuilder to read all the lines
+        String text = bf.readLine();    //Reads the first line
         try {
-            while (text != null) {
-                sb.append(text);
-                sb.append("\n");
-                text = bf.readLine();
+            while (text != null) {  //While loop that ends whene there are no more lines in the file
+                sb.append(text);    //Append the line to the StringBuilder
+                sb.append("\n");    //Append a new line
+                text = bf.readLine();   //Read a new line
 
             }
         } finally {
-            bf.close();
+            bf.close(); //Close the buffered reader
         }
         //System.out.print(sb.toString());
 
-        String[] splitSamples = sb.toString().split("\\s+|\n|,\\s+");
-        samples = new double[splitSamples.length];
+        //Creates an array of Strings from the StringBuilder string, splitted at the encounter of whitespace of new line
+        String[] splitSamples = sb.toString().split("\\s+|\n");
+
+        samples = new double[splitSamples.length];  //We create a double array that has the length of String array
         for (int i = 0; i < splitSamples.length; i++) {
             //System.out.print(samples[i] );
-            samples[i] = Double.parseDouble(splitSamples[i]);
+            samples[i] = Double.parseDouble(splitSamples[i]);   //Converts the strings from array to doubles
 
         }
     }
 
-    public void copy(Signal signal) {  //COPY SAMPLES OF SIGNAL INTO OUR SAMPLES
-        samples = getSamples(signal);
+    public void copy(Signal signal) {  //Copy the sammples of argument signal into our signal samples
+        samples = getSamples(signal);   //getSamples is a private method used to get the samples of a signal
     }
 
-    public Signal add(Signal signalToAdd) {    //ADD A SIGNAL TO OUR SIGNAL
+    public Signal add(Signal signalToAdd) {    //Superposition of two signals
         double[] samplesToAdd = getSamples(signalToAdd);
 
 
-
+        //The result signal has the length of the signal with more samples, so we check which is largest
         if (samplesToAdd.length > samples.length) {
-            double[] resultSamples = (double[]) samplesToAdd.clone();
-
+            double[] resultSamples = samplesToAdd.clone();  //Clone the larger sample array into result samples
+            //The loop goes from 0 to the smaller array of samples. It's like adding 0 after the small signal ends
             for (int i = 0; i < samples.length; i++) {
                 resultSamples[i] = resultSamples[i] + samples[i];
             }
 
-            return new Signal(resultSamples);
+            return new Signal(resultSamples);   //Returns a new signal having the samples the results
         } else {
-            double[] resultSamples = (double[]) samples.clone();
+            double[] resultSamples = samples.clone();
             for (int i = 0; i < samplesToAdd.length; i++) {
                 resultSamples[i] = samplesToAdd[i] + samples[i];
             }
@@ -72,60 +75,58 @@ public class Signal {
 
     }
 
-    public Signal scale(double gain) {     //SCALE (MULTIPLY)
+    public Signal scale(double gain) {     //Scale the signal
         double[] resultSamples = new double[samples.length];
         for (int i = 0; i < samples.length; i++) {
-            resultSamples[i] = gain * samples[i];
+            resultSamples[i] = gain * samples[i];   //Multiply each sample with a value
         }
-        return new Signal(resultSamples);
+        return new Signal(resultSamples);   //Return new scaled signal
     }
 
-    public Signal delay(int delay) {   //DELAY THE SIGNAL
+    public Signal delay(int delay) {   //Delay the signal
         double[] delayedSamples = new double[samples.length];
-        if(delay > 0) {
-            for (int i = delay; i < samples.length; i++) {
-                delayedSamples[i] = samples[i - delay];
+        if (delay > 0) { //Delay positive, signal[t-delay]
+            for (int i = delay; i < samples.length; i++) {  //Starts from the delayed value, such that to the left of delay there is 0
+                delayedSamples[i] = samples[i - delay]; //Delayed samples take the value of delayed samples array
 
             }
-        }
-        else {
-            for (int i = 0;i<samples.length + delay;i++) {
-                delayedSamples[i] = samples[i-delay];
+        } else {
+            for (int i = 0; i < samples.length + delay; i++) {  //keep in mind that delay is negative in this case
+                delayedSamples[i] = samples[i - delay];
             }
         }
         return new Signal(delayedSamples);
     }
 
-    public Signal convolve(Signal signal) {    //CONVOLUTION
+    public Signal convolve(Signal signal) {    //Convolution
         double[] resultSamples;
         double[] secondSignalSamples = getSamples(signal);
 
-        if(secondSignalSamples.length>samples.length) {
-            samples = getSamples(this.add(genEmptySignal(secondSignalSamples.length)));   //fill signal that has less samples with zeros
-            //System.out.println((new Signal(samples)).toString());
+        //genEmptySignal is a private method for generating an empty signal (samples are zeros) of a certain length
+        //We will fill the signal with less non zero samples with zeros, such that the samples arrays will have equal length
+        if (secondSignalSamples.length > samples.length) {
+            samples = getSamples(this.add(genEmptySignal(secondSignalSamples.length)));   //Fill signal that has less samples with zeros
+
             resultSamples = new double[secondSignalSamples.length];
-        }
-        else {
-            secondSignalSamples = getSamples(signal.add(genEmptySignal(samples.length)));   //fill signal thas has less samples with zeros
-            //System.out.println((new Signal(secondSignalSamples)).toString());
+        } else {
+            secondSignalSamples = getSamples(signal.add(genEmptySignal(samples.length)));   //Fill signal thas has less samples with zeros
+
             resultSamples = new double[samples.length];
         }
 
 
-        for (int t = 0;t<resultSamples.length;t++) {
+        for (int t = 0; t < resultSamples.length; t++) {
             resultSamples[t] = 0;
-            for (int k = 0; k<samples.length; k++) {
-                if(t>=k)
-                resultSamples[t] = resultSamples[t] + samples[k]*secondSignalSamples[t-k];
+            for (int k = 0; k < samples.length; k++) {
+                if (t >= k)    //Condition to avoid negative indices
+                    resultSamples[t] = resultSamples[t] + samples[k] * secondSignalSamples[t - k];  //Discrete signal time convolution
             }
         }
         return new Signal(resultSamples);
     }
 
 
-
-
-    public String toString() {  //TOSTRING
+    public String toString() {
         StringBuffer sbf = new StringBuffer();
         for (int i = 0; i < samples.length; i++) {
             sbf.append(samples[i]).append("\t ");   //added an empty space after tab because tab alone would print just a space
@@ -133,7 +134,7 @@ public class Signal {
         return sbf.toString();
     }
 
-    void save(String fileName) throws IOException { //WRITE TO FILE OUR SAMPLES
+    void save(String fileName) throws IOException { //Write our signal's samples to a file
         BufferedWriter bfw = new BufferedWriter(new FileWriter(fileName));
 
         try {
@@ -145,8 +146,8 @@ public class Signal {
         }
     }
 
-    private double[] getSamples(Signal signal) {
-        String[] stringSamples = signal.toString().split("\t ");    //added an empty space after tab because only \t would print a space character
+    private double[] getSamples(Signal signal) {    //Method that gets the samples of a given signal
+        String[] stringSamples = signal.toString().split("\t ");    //added an empty space after tab because only \t would sometimes print a space character
         double[] samples = new double[stringSamples.length];
 
         for (int i = 0; i < stringSamples.length; i++) {
@@ -156,7 +157,7 @@ public class Signal {
         return samples;
     }
 
-    private Signal genEmptySignal(int length) {
+    private Signal genEmptySignal(int length) { //Method that instantiates an empty signal of a certain length
         double[] samples = new double[length];
         for (int i = 0; i < length; i++) {
             samples[i] = 0;
@@ -164,28 +165,4 @@ public class Signal {
         return new Signal(samples);
     }
 
-
-    public static void main(String[] args) throws IOException {
-       double[] samples1 = {3, -3, 0};
-        double[] samples2 = {1, 2, 1, -1, -2, -1, 0, 0, 0, 0};
-        Signal signal = new Signal("samples.txt");
-
-        Signal signal2 = new Signal("samples");
-        System.out.println("signal 1: " + signal);
-        System.out.println("signal 2: " + signal2);
-
-
-
-        try {
-            signal.convolve(signal2).save("cf");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Signal out = new Signal();
-        Element adder = new Filter(out,new Signal(samples2), samples1 );
-        adder.compute();
-        System.out.println(out);
-
-    }
 }
