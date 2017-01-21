@@ -102,6 +102,7 @@ public class Signal {
         double[] resultSamples;
         double[] secondSignalSamples = getSamples(signal);
 
+
         //genEmptySignal is a private method for generating an empty signal (samples are zeros) of a certain length
         //We will fill the signal with less non zero samples with zeros, such that the samples arrays will have equal length
         if (secondSignalSamples.length > samples.length) {

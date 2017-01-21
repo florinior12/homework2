@@ -6,7 +6,8 @@ package dsp;
  * Group: 422G
  * Homework: 2
  */
-public class Filter extends Element {
+public class
+Filter extends Element {
     private double[] samples;
 
     //besides input and output, we have an array of samples, the system's finite impulse response

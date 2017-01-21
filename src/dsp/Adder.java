@@ -10,8 +10,12 @@ public class Adder extends Element {
 
 
     public Adder(Signal out, Signal in1, Signal in2) {  //in case there are two input signals to be added
-        this(out, new Signal[]{in1, in2});  //call the constructor used for array of signals, giving the two signals as array
+       // this(out, new Signal[]{in1, in2});  //call the constructor used for array of signals, giving the two signals as array
 
+        output = out;
+        multipleInput = new Signal[2];
+        multipleInput[0] = in1;
+        multipleInput[1] = in2;
     }
 
     public Adder(Signal out, Signal[] in) { //constructor for multiple inputs, as array
