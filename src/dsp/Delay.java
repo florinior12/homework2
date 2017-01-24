@@ -18,4 +18,8 @@ public class Delay extends Element {
     public void compute() {
         output.copy(singleInput.delay(delay));  //compute uses Signal's delay method
     }
+
+    public String toString() {
+        return "DELAY";
+    }
 }

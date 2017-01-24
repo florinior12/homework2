@@ -40,4 +40,9 @@ public class Adder extends Element {
 
 
     }
+
+    public String toString() {
+
+        return "ADDER";
+    }
 }

@@ -9,7 +9,7 @@ import java.io.*;
  * Homework: 2
  */
 public class Signal {
-    private double[] samples;   //Array of type double which contains samples
+    double[] samples;   //Array of type double which contains samples
 
     public Signal() {      //Default constructor creates an empty signal, with no samples
         this.samples = null;

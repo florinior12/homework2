@@ -10,6 +10,7 @@ import java.util.ArrayList;
  */
 public class LinearSystem {
     private ArrayList<Element> elements = new ArrayList<>();
+    private ArrayList<Element> sortedElements = new ArrayList<>();
     private Signal input;
     private Signal output;
 
@@ -51,9 +52,22 @@ public class LinearSystem {
         elements.add(element);
     }
 
-    public void compute() {
+    public void compute() { //I need to sort the array list somehow...
+        /*for (Element element : elements) {
+            elements.remove();
+
+            if (element.output == output && elements.indexOf(element)!=elements.size()-1) {
+                Element toSwap = element;
+                elements.set(elements.indexOf(element),elements.get(elements.size()-1));
+                elements.set(elements.size()-1,toSwap);
+            }
+        }*/
+
+
         for (Element element : elements) {
-            element.compute();
+            if(element.singleInput.samples!=null || element.isMultipleFull()) {
+
+            }
         }
     }
 
@@ -80,13 +94,16 @@ public class LinearSystem {
         Signal c = new Signal();
         Signal d = new Signal();
         double[] fir = {3, -2, 1, 0};
-        ls.add(new Filter(b, a, fir));
+
         ls.add(new Gain(c, a, 0.5));
+
+        ls.add(new Filter(b, a, fir));
         ls.add(new Adder(d, b, c));
+
         ls.setInput(a);
         System.out.println("in\t" + a);
         ls.setOutput(d);
         ls.compute();
-        System.out.println("out\t" + d);
+       // System.out.println("out\t" + d);
     }
 }

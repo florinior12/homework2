@@ -19,4 +19,8 @@ public class Gain extends Element {
     public void compute() {
         output.copy(singleInput.scale(gain));   //compute uses Signal's scale method
     }
+
+    public String toString() {
+        return "GAIN";
+    }
 }

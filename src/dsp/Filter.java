@@ -21,4 +21,8 @@ Filter extends Element {
     public void compute() {
         output.copy(singleInput.convolve(new Signal(samples))); //compute uses Signal's convolve method
     }
+
+    public String toString() {
+        return "FILTER";
+    }
 }
