@@ -15,19 +15,5 @@ public abstract class Element {
 
     }
 
-    boolean isMultipleFull() {
-        boolean isFull = true;
-        if (multipleInput != null) {
-            for (int i = 0; i < multipleInput.length; i++) {
-                if (multipleInput[i].samples == null) {
-                    isFull = false;
-                    i = multipleInput.length;
-                }
-            }
 
-            return isFull;
-        } else {
-            return false;
-        }
-    }
 }

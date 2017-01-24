@@ -1,9 +1,8 @@
 package dsp;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by Florin on 1/21/2017.
@@ -52,21 +51,21 @@ public class LinearSystem {
         elements.add(element);
     }
 
-    public void compute() { //I need to sort the array list somehow...
-        /*for (Element element : elements) {
-            elements.remove();
-
-            if (element.output == output && elements.indexOf(element)!=elements.size()-1) {
-                Element toSwap = element;
-                elements.set(elements.indexOf(element),elements.get(elements.size()-1));
-                elements.set(elements.size()-1,toSwap);
-            }
-        }*/
-
-
-        for (Element element : elements) {
-            if(element.singleInput.samples!=null || element.isMultipleFull()) {
-
+    public void compute() { //Compute method
+        int i = 0;
+        //This method calls the compute of all the elements whose inputs are not empty signals, untill the output is not an empty signal anymore
+        while (this.output.samples == null) {   //While the output is an empty signal
+            System.out.println(++i);
+            for (Element element : elements) {  //Foreach loop
+                if (!element.getClass().getSimpleName().equals("Adder")) {  //For elements that are not adders and have just one input signal
+                    if (element.singleInput.samples != null) {  //Check if the input is empty signal
+                        element.compute();
+                    }
+                } else {
+                    if (isMultipleFull(element)) {  //Check if all the input signals are not empty signals
+                        element.compute();
+                    }
+                }
             }
         }
     }
@@ -86,24 +85,141 @@ public class LinearSystem {
     public Signal getOutput() {
         return output;
     }
+
+    public void save () throws IOException{
+
+        BufferedWriter bf = null;
+        HashMap hashMap = new HashMap();
+        hashMap.put(input.hashCode(),"in");
+        hashMap.put(output.hashCode(), "out");
+        int i = 0;
+
+        for (Element element : elements) {
+            if (!hashMap.containsKey(element.output.hashCode())) {
+
+                hashMap.put(element.output.hashCode(), (char) (97 + i));
+                i++;
+            }
+            if (!element.getClass().getSimpleName().equals("Adder")) {
+                if (!hashMap.containsKey(element.singleInput.hashCode())) {
+                    hashMap.put(element.singleInput.hashCode(), (char) (97 + i));
+                    i++;
+                }
+            } else {
+                for (int j = 0; j<element.multipleInput.length;j++) {
+                    if (!hashMap.containsKey(element.multipleInput[j].hashCode())) {
+                        hashMap.put(element.multipleInput[j].hashCode(), ((char) (97 + i) + "" + j));
+
+                    }
+                }
+                i++;
+            }
+        }
+
+
+        try {
+            bf = new BufferedWriter(new FileWriter("saved.txt"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        for (Element element : elements) {
+            String line = "";
+            switch (element.getClass().getSimpleName()) {
+                case "Adder":
+                    line += "ADDER\t" + hashMap.get(element.output.hashCode());
+                    for (int j = 0; j<element.multipleInput.length;j++) {
+                        line += "\t" + hashMap.get(element.multipleInput[j].hashCode());
+                    }
+                    break;
+                default:
+                    line += element.getClass().getSimpleName().toUpperCase() + "\t" + hashMap.get(element.output.hashCode()) + "\t" +  hashMap.get(element.singleInput.hashCode()) +"\t";
+                    break;
+            }
+            try {
+                bf.write(line + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            bf.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+    /*
+    void printHash() {
+        for (Element element : elements) {
+            System.out.println(elements.indexOf(element) + ":");
+
+            if (element.getClass().getSimpleName().equals("Adder")) {
+                System.out.print((char)(element.output.hashCode()%25+97) + "\t");
+                for (int i = 0; i< element.multipleInput.length;i++) {
+                    System.out.print((char)(element.multipleInput[i].hashCode()%25+97)+"\t");
+                }
+                System.out.print("\n");
+            }
+            else {
+                System.out.println(((char)(element.output.hashCode()%25+97)) + "\t" + ((char)(element.singleInput.hashCode()%25+97)));
+            }
+        }
+    }*/
+
+    boolean isMultipleFull(Element element) {      //Checks if all the inputs from the multipleInput() are signals with samples not null
+        boolean isFull = true;
+        if (element.multipleInput != null) {
+            for (int i = 0; i < element.multipleInput.length; i++) {
+                if (element.multipleInput[i].samples == null) {
+                    isFull = false;
+                    i = element.multipleInput.length;
+                }
+            }
+
+            return isFull;
+        } else {
+            return false;
+        }
+    }
+
     public static void main(String[] args) {
         LinearSystem ls = new LinearSystem();
-        double[] samples = {2, 3, 4, 3, 2, 0, -2, -3, -4, -3, -2, 0, 0, 0, 0};
+        double[] samples = {1,2,3};
         Signal a = new Signal(samples);
         Signal b = new Signal();
-        Signal c = new Signal();
-        Signal d = new Signal();
+        Signal e = new Signal();
+        Signal f = new Signal();
+        Signal k = new Signal();
+        Signal o = new Signal();
+        Signal m = new Signal();
+        Signal n = new Signal();
+        Signal p = new Signal();
         double[] fir = {3, -2, 1, 0};
 
-        ls.add(new Gain(c, a, 0.5));
+        ls.add(new Gain(b,a,2));
+        ls.add(new Gain(f,a,2));
+        ls.add(new Adder(o,m,n));
+        ls.add(new Adder(m,k,p));
+        ls.add(new Gain(k,b,2));
+        ls.add(new Gain(e,a,2));
+        ls.add(new Adder(p,k,e));
+        ls.add(new Gain(n,f,2));
 
-        ls.add(new Filter(b, a, fir));
-        ls.add(new Adder(d, b, c));
+
 
         ls.setInput(a);
         System.out.println("in\t" + a);
-        ls.setOutput(d);
-        ls.compute();
-       // System.out.println("out\t" + d);
+
+        ls.setOutput(o);
+        try {
+            ls.save();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        //ls.compute();
+
     }
 }
