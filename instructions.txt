@@ -1,19 +1,10 @@
-ADDER  w  x  y
-FILTER x  in 3 -2 1 0
-
-
-
-
-
-
-
-GAIN   y  in 0.5
-
-
-
-INPUT  in
-
-
-
-OUTPUT w
-
+GAIN	a	in	2.0
+GAIN	c	in	2.0
+ADDER	out	d	e
+ADDER	d	g	h
+GAIN	g	a	2.0
+GAIN	j	in	2.0
+ADDER	h	g	j
+GAIN	e	c	2.0
+IN	in
+OUT	out

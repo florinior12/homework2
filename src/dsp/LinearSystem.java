@@ -10,8 +10,8 @@ import java.util.HashMap;
 public class LinearSystem {
     private ArrayList<Element> elements = new ArrayList<>();
     private ArrayList<Element> sortedElements = new ArrayList<>();
-    private Signal input = null;
-    private Signal output = null;
+    private Signal input = new Signal();
+    private Signal output;
 
     public LinearSystem() {
 
@@ -20,11 +20,13 @@ public class LinearSystem {
 
     public LinearSystem(String fileName) throws IOException {
         BufferedReader bf = null;
+
+
         bf = new BufferedReader(new FileReader(fileName));
         HashMap hashMap = new HashMap();
 
         String line = bf.readLine();
-        String text = "";
+        String text = "";   //Whole text file is kept in this String
 
         while ((line != null)) {
             if (!line.equals(""))
@@ -33,34 +35,41 @@ public class LinearSystem {
         }
         bf.close();
 
-        String[] instructions = text.split("\n");
+        String[] instructions = text.split("\n");   //The text is split in lines, each line is an instruction
+        int k = 0;  //For debug purposes
 
         for (String instruction : instructions) {
-            String[] labels = instruction.split("\\s+");
+            String[] labels = instruction.split("\\s+");    //Each
             switch (labels[0]) {
                 case "GAIN":
-                    if (!hashMap.containsKey(labels[1])) {
+                    if (!hashMap.containsKey(labels[1].hashCode())) {
                         hashMap.put(labels[1].hashCode(), new Signal());
+                        k++;
                     }
-                    if (!hashMap.containsKey(labels[2])) {
+                    if (!hashMap.containsKey(labels[2].hashCode())) {
                         hashMap.put(labels[2].hashCode(), new Signal());
+                        k++;
                     }
                     elements.add(new Gain((Signal) hashMap.get(labels[1].hashCode()), (Signal) hashMap.get(labels[2].hashCode()), Double.parseDouble(labels[3])));
                     break;
                 case "DELAY":
-                    if (!hashMap.containsKey(labels[1])) {
+                    if (!hashMap.containsKey(labels[1].hashCode())) {
                         hashMap.put(labels[1].hashCode(), new Signal());
+                        k++;
                     }
-                    if (!hashMap.containsKey(labels[2])) {
+                    if (!hashMap.containsKey(labels[2].hashCode())) {
                         hashMap.put(labels[2].hashCode(), new Signal());
+                        k++;
                     }
                     elements.add(new Delay((Signal) hashMap.get(labels[1].hashCode()), (Signal) hashMap.get(labels[2].hashCode()), Integer.parseInt(labels[3])));
                 case "FILTER":
-                    if (!hashMap.containsKey(labels[1])) {
+                    if (!hashMap.containsKey(labels[1].hashCode())) {
                         hashMap.put(labels[1].hashCode(), new Signal());
+                        k++;
                     }
-                    if (!hashMap.containsKey(labels[2])) {
+                    if (!hashMap.containsKey(labels[2].hashCode())) {
                         hashMap.put(labels[2].hashCode(), new Signal());
+                        k++;
                     }
                     double[] samples = new double[labels.length];
                     for (int i = 3; i<labels.length; i++) {
@@ -69,21 +78,39 @@ public class LinearSystem {
                     elements.add(new Filter((Signal) hashMap.get(labels[1].hashCode()), (Signal) hashMap.get(labels[2].hashCode()), samples));
                     break;
                 case "ADDER":
-                    if (!hashMap.containsKey(labels[1])) {
+                    if (!hashMap.containsKey(labels[1].hashCode())) {
                         hashMap.put(labels[1].hashCode(), new Signal());
+                        k++;
                     }
                     Signal[] toAdd = new Signal[labels.length-2];
                     for (int i = 2; i<labels.length; i++) {
-                        if (!hashMap.containsKey(labels[i])) {
+                        if (!hashMap.containsKey(labels[i].hashCode())) {
                             hashMap.put(labels[i].hashCode(), new Signal());
+                            k++;
                         }
+                        toAdd[i-2] = (Signal) hashMap.get(labels[i].hashCode());
                     }
+                    elements.add(new Adder((Signal) hashMap.get(labels[1].hashCode()), toAdd));
+                    break;
                 case "IN":
-                    hashMap.put(labels[1].hashCode(), new Signal(input.samples));
-                    input = (Signal) hashMap.get(labels[1].hashCode());
+                    if (!hashMap.containsKey(labels[1].hashCode())) {
+                        hashMap.put(labels[1].hashCode(), input);
+                        k++;
+                    }
+                    this.input = (Signal) hashMap.get(labels[1].hashCode());
+                    break;
+                case "OUT":
+                    if (!hashMap.containsKey(labels[1].hashCode())) {
+                        hashMap.put(labels[1].hashCode(), new Signal());
+                        k++;
+                    }
+                    this.output = (Signal) hashMap.get(labels[1].hashCode());
+                    break;
 
             }
         }
+
+
 
 
     }
@@ -94,9 +121,10 @@ public class LinearSystem {
 
     public void compute() { //Compute method
         int i = 0;
+        System.out.println(this.input);
         //This method calls the compute of all the elements whose inputs are not empty signals, untill the output is not an empty signal anymore
         while (this.output.samples == null) {   //While the output is an empty signal
-            System.out.println(++i);
+            //System.out.println(++i);
             for (Element element : elements) {  //Foreach loop
                 if (!element.getClass().getSimpleName().equals("Adder")) {  //For elements that are not adders and have just one input signal
                     if (element.singleInput.samples != null) {  //Check if the input is empty signal
@@ -111,8 +139,10 @@ public class LinearSystem {
         }
     }
 
-    public void setInput(Signal input) {
-        this.input = input;
+    public void setInput(Signal a) {
+
+        input.copy(a);  //We want to keep the adress of the input instantiated as the field of linearsystem class, for further use
+
     }
 
     public void setOutput(Signal output) {
@@ -221,12 +251,15 @@ public class LinearSystem {
         }
     }
 
-    public static void main(String[] args) {
-        LinearSystem ls = new LinearSystem();
+    public static void main(String[] args) throws IOException{
+        LinearSystem ls = new LinearSystem("instructions.txt");
+
 
         double[] samples = {1, 2, 3};
         Signal a = new Signal(samples);
-        Signal b = new Signal();
+        /*Signal b = new Signal();
+
+
         Signal e = new Signal();
         Signal f = new Signal();
         Signal k = new Signal();
@@ -237,27 +270,28 @@ public class LinearSystem {
         double[] fir = {3, -2, 1, 0};
 
         ls.add(new Gain(b, a, 2));
-        ls.add(new Filter(f, a, fir));
+        ls.add(new Gain(f, a, 2));
         ls.add(new Adder(o, m, n));
-        ls.add(new Delay(m, k, 1));
+        ls.add(new Adder(m,k,p));
         ls.add(new Gain(k, b, 2));
         ls.add(new Gain(e, a, 2));
         ls.add(new Adder(p, k, e));
-        ls.add(new Gain(n, f, 2));
+        ls.add(new Gain(n, f, 2));*/
+
 
 
         ls.setInput(a);
         System.out.println("in\t" + a);
 
-        ls.setOutput(o);
+        //ls.setOutput(o);
+
+        ls.compute();
         try {
             ls.save();
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
-        ls.compute();
-
-        System.out.println("out\t" + o);
+        System.out.println("out\t" + ls.getOutput());
 
     }
 }

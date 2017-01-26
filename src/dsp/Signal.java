@@ -128,6 +128,9 @@ public class Signal {
 
 
     public String toString() {
+        if (samples == null) {
+            return "NULL MADAFAKA";
+        }
         StringBuffer sbf = new StringBuffer();
         for (int i = 0; i < samples.length; i++) {
             sbf.append(samples[i]).append("\t ");   //added an empty space after tab because tab alone would print just a space
