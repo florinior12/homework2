@@ -6,7 +6,7 @@ package dsp;
  * Homework: 2
  */
 public class Delay extends Element {
-    private int delay;
+    int delay;
 
     public Delay(Signal out, Signal in, int delay) {    //besides input and output, we use an integer which represents the delay
         output = out;

@@ -7,7 +7,7 @@ package dsp;
  * Homework: 2
  */
 public class Gain extends Element {
-    private double gain;
+    double gain;
 
     public Gain(Signal out, Signal in, double gain) {   //Besides input and output, we have a scalar value gain
         output = out;

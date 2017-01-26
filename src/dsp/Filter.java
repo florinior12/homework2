@@ -8,7 +8,7 @@ package dsp;
  */
 public class
 Filter extends Element {
-    private double[] samples;
+    double[] samples;
 
     //besides input and output, we have an array of samples, the system's finite impulse response
     public Filter(Signal out, Signal in, double[] samples) {
