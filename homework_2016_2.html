@@ -1,0 +1,265 @@
+<html>
+<head>
+<meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8">
+<title>OOP 2016: Homework nr. 2</title>
+<meta name="author" content="Zoltan Hascsi">
+</head>
+
+<body>
+
+<div align="center">
+<h2>Homework nr. 2 - December 2016</h2>
+</div>
+
+<table cellspacing="5px">
+
+<tr><td>Impressed by the winnings of your programs at the game table during his visit at <span style="font-style:italic;">Las Javas</span>,
+a Martian software developer, <span style="font-style:italic;">MarsWorks</span>, has just asked for your help to design a package for its
+<span style="font-style:italic;">JavaLab</span> computing environment, targeted to linear systems analysis.
+The reward is truly astonishing, a trip to the company headquarters on Mars with the next martian mission with humans on board.</td></tr>
+
+<tr><td></td></tr>
+<tr><td>
+<h3>Application description:</h3>
+<span style="font-style:italic;">
+You are required to design the necessary classes for the object-oriented simulation of discrete-time linear time-invariant systems.
+The intended simulations use convolution and impulse response to compute the output of such systems.
+One class is needed to define the signals. It embeds a vector of samples and the common linear operations with signals, i.e. scalar multiplication,
+time-shifting, superposition and convolution.
+Another class defines the system elements, with subclasses that are fitted for various system element types.
+The system elements used for linear systems are amplifiers, delay elements, adders, and filters:
+<ul>
+<li>The amplifier has an input and an output, and is characterized by a gain. The output signal is the
+multiplication of the input signal with the constant gain value.</li>
+<li>The delay element shifts the input signal with a constant number of time units to the right.</li>
+<li>An adder has a couple of inputs and one output. Its output signal is the superposition of all input signals.</li>
+<li>A filter object has only one input and is characterized by a finite impulse response.
+Its output is the convolution of the input signal with the impulse response.</li>
+</ul>
+The elements that share a signal are connected between them. The systems which are to be modeled are without feedback,
+and only finite impulse response filters (FIR) are allowed for filter elements. Also the systems will have a single input
+and a single output.
+</span></td></tr>
+
+<tr><td></td></tr>
+
+<tr><td>
+<h3>Requirements:</h3>
+<!--------------------------------------- SIGNAL ----------------------------->
+<h4>Signals</h4>
+The <span style="font-family:monospace;">Signal</span> object encapsulates a vector of samples and defines the signal general operations.
+Two or more signals may be added to get a superposed signal, and a signal may be multiplied by a constant or delayed (shifted to the right) by a constant
+number of time units. The sample value domain is contiunous.
+</td></tr>
+
+<tr><td>
+<span style="font-weight:bold;">Table 1. The public members of the
+<span style="font-family:monospace;">Signal</span> class</span>:
+<table border = "solid" cellpadding = "4px">
+
+<tr><td><span style="font-family:monospace;">Signal()</span></td>
+<td>Creates an empty signal, without any sample.</td></tr>
+
+<tr><td><span style="font-family:monospace;">Signal(double[])</span></td>
+<td>The argument is the vector of signal sample values.<br />The first sample corresponds to T=0.</td></tr>
+
+<tr><td><span style="font-family:monospace;">Signal(String)</span></td>
+<td>The argument is the filename that contains the sample values.<br />
+The file contains only the sample values, separated by empty spaces (they may be even tabs or new lines).</td></tr>
+
+<tr><td><span style="font-family:monospace;">void copy(Signal)</span></td>
+<td>Make this signal a copy of the argument signal (the samples of the argument signal are copied into this signal samples).</td></tr>
+
+<tr><td><span style="font-family:monospace;">Signal add(Signal)</span></td>
+<td>Returns the superposition of this signal with the signal given as argument.<br />
+Both signals are presumed to have their samples alligned so that their first sample correspond to T=0.<br />
+If their length is unequal, the shortest signal is padded with zeros.
+</td></tr>
+
+<tr><td><span style="font-family:monospace;">Signal scale(double)</span></td>
+<td>Returns a signal which is the original signal scaled with the gain given as argument.
+</td></tr>
+
+<tr><td><span style="font-family:monospace;">Signal delay (int)</span></td>
+<td>Returns a signal which is the original signal delayed with the number of time units given as argument.<br />
+The result has the same length as the original signal, and its first sample corresponds to T = 0.
+</td></tr>
+
+<tr><td><span style="font-family:monospace;">Signal convolve(Signal)</span></td>
+<td>Returns the convolution of this signal with the signal given as argument.<br />
+Both signals are presumed to have their samples alligned so that their first sample correspond to T=0.<br />
+The result is truncated to have the same length as the longest operand, and its first sample corresponds to T=0. 
+</td></tr>
+
+<tr><td><span style="font-family:monospace;">String toString()</span></td>
+<td>Returns the ordered list of samples, separated by tabs, starting with the first sample (at T=0).</td></tr>
+
+<tr><td><span style="font-family:monospace;">void save(String)</span></td>
+<td>Save the signal to the file whose name is given as argument. If the file does not exist create a new one.<br />
+The file will contain only the sample values, ordered from the first sample (at T=0) and separated by empty spaces.</td></tr>
+
+</table>
+</td></tr>
+
+<tr><td>Example of signal instantiations and operations:
+<pre>
+    double[] samples1 = {1, 2, 1, -1, -2, -1};
+    Signal s1 = new Signal(samples1);
+    System.out.println("s1\t" + s1);
+    double[] samples2 = {0, 0.5, -0.5};
+    Signal s2 = new Signal(samples2);
+    System.out.println("s2\t" + s2);
+    Signal s;
+    s = s1.add(s2);
+    System.out.println("s1+s2\t" + s);
+    s = s2.scale(0.1);
+    System.out.println("0.1*s2\t" + s);
+    s = s1.delay(2);
+    System.out.println("s1[t-2]\t" + s);
+    s = s1.convolve(s2);
+    System.out.println("s1*s2\t" + s);
+</pre>
+The output of this sequence may look like that:
+<pre>
+    s1      1.0    2.0    1.0    -1.0    -2.0   -1.0	
+    s2      0.0	   0.5    -0.5	
+    s1+s2   1.0	   2.5    0.5    -1.0    -2.0   -1.0
+    s1[t-2] 0.0    0.0    1.0    2.0     1.0    -1.0	
+    0.1*s2  0.0	   0.05   -0.05	
+    s1*s2   0.0	   0.5	  0.5    -0.5    -1.0   -0.5
+</pre>
+</td></tr>
+
+<!--------------------------------------- ELEMENT ----------------------------->
+<tr>
+<td>
+<h4>System elements</h4>
+There may be four types of system elements, the adder, for superposition, the linear amplifier, for scaling, the delay element, for time-shifting,
+and the filter, for convolution.
+All these are derived from the abstract <span style="font-family:monospace;">Element</span> class,
+that declares the input and output fields, and the method that computes the output.
+</td></tr>
+
+<tr><td>
+<span style="font-weight:bold;">Table 2. The public members of the
+<span style="font-family:monospace;">Element</span> class</span>:
+<table border = "solid" cellpadding = "4px">
+<tr><td><span style="font-family:monospace;">void compute()</span></td>
+<td>Computes the output sample values from the input sample values.</td>
+</table>
+</td></tr>
+
+<tr>
+<td>
+Any system element has only one output, which may be of type <span style="font-family:monospace;">Signal</span> or <span style="font-family:monospace;">double[]</span>,
+and one or more inputs, of the same type as the output. Since this fields are supposed to be used only inside the package, for signal processings
+and system connection management, they must not be public members. 
+</td></tr>
+
+<tr>
+<td>
+The actual system elements implement the <span style="font-family:monospace;">compute</span> method
+and have public constructors that allow their proper instantiation.
+The table below lists the constructors for all public classes derived from the <span style="font-family:monospace;">Element</span> class</span>:
+</td></tr>
+
+<tr><td>
+<span style="font-weight:bold;">Table 3. The public constructors of the classes derived from the
+<span style="font-family:monospace;">Element</span> class</span>:
+<table border = "solid" cellpadding = "4px">
+<tr><td><span style="font-family:monospace;">Adder(Signal, Signal, Signal)</span></td>
+<td>Instantiates and adder with two inputs.<br />
+The first argument is the output. The second and the third argument are the inputs.</td></tr>
+
+<tr><td><span style="font-family:monospace;">Adder(Signal, Signal[])</span></td>
+<td>Instantiates and adder with an arbitrary number of inputs.<br />
+The first argument is the output. The second argument is the vector of inputs.</td></tr>
+
+<tr><td><span style="font-family:monospace;">Gain(Signal, Signal, double)</span></td>
+<td>Instantiates a linear amplifier.<br />
+The first argument is the output. The second argument is the input.<br />
+The third argument is the constant gain that scales the input signal.</td></tr>
+
+<tr><td><span style="font-family:monospace;">Delay(Signal, Signal, int)</span></td>
+<td>Instantiates a delay element.<br />
+The first argument is the output. The second argument is the input.<br />
+The third argument is the number of time units with which the input signal is delayed.
+</td></tr>
+
+<tr><td><span style="font-family:monospace;">Filter(Signal, Signal, double[])</span></td>
+<td>Instantiates a finite impulse response filter (FIR).<br />
+The first argument is the output. The second argument is the input.<br />
+The third argument is the vector of filter coefficients (the samples of the impulse response signal).
+</td></tr>
+
+</table>
+</td></tr>
+
+<tr><td>Example of element instantiation and operation:
+<pre>
+    double[] inputSamples = {1, 2, 1, -1, -2, -1, 0, 0, 0, 0};
+    Signal input = new Signal(inputSamples);
+    System.out.println("in\t" + input);
+    double[] firSamples = {3, -3, 0};
+    Signal fir = new Signal(firSamples);
+    System.out.println("fir\t" + fir);
+    Signal output = new Signal();
+    Element filter = new Filter(output, input, firSamples);
+    filter.compute();
+    System.out.println("out\t" + output);
+</pre>
+The output of this sequence may look like that:
+<pre>
+in    1.0    2.0    1.0    -1.0   -2.0   -1.0   0.0    0.0    0.0    0.0	
+fir   3.0    -3.0   0.0	
+out   3.0    3.0    -3.0   -6.0   -3.0   3.0    3.0    0.0    0.0    0.0
+</pre>
+</td></tr>
+
+<tr><td></td></tr>
+
+<tr><td>
+<h3>Assignments:</h3>
+<span style="font-style:italic;">
+<ol>
+<li><span style="font-family:monospace;">Signal</span> class - <span style="color:red;">5 points</span></li>
+<li><span style="font-family:monospace;">Element</span> class and its subclasses - <span style="color:red;">5 points</span></li>
+</ol>
+Design these classes one by one, starting with the <span style="font-family:monospace;">Signal</span> class.
+Add to each class one method at a time, and test it thoroughly before moving to the next method.
+Also design and test thoroughly a class before moving to the design of the next class.
+</span></td></tr>
+
+<tr><td></td></tr>
+
+<tr><td>
+<h3>Hints and notes:</h3>
+<ul>
+<li>All your classes are in the same package: <span style="font-family:monospace;">dsp</span>.</li>
+<li>Strictly obey the name of the package, the name of required public classes, the return type,
+the names and the argument types for all methods listed in the tables, and the system element descriptor syntax.</li>
+<li>You may use additional fields, methods and classes if they help your implementation, but they must not be public
+and must be part of the same package.</li>
+<li>Insert relevant comments in your code.</li>
+<li>You may test your designed classes using sequences as in the examples above.</li>
+<li>Add a header comment to each of your Java files with your name and the homework's number!</li>
+<li>
+Archive ONLY the Java source package as a ZIP archive, and name the archive file 
+<span style="font-family:monospace;"><span style="font-style:italic;">&lt;group&gt;_&lt;FirstnameLastname&gt;</span>.zip</span>
+(for example 423G_JohnCodebreaker.zip).
+</li>
+<li>Deadline: <span style="color:red;font-weight:bold;">January 13'th</span></li>
+<li>For each day after the deadline you receive two points less,
+but any file sent after more than 5 days delay will be ignored.</li>
+<li>Submitted files that are not .zip archives and with noncompliant filenames will be dropped!</li>
+<li>All files that don't compile are rejected without further analysis and will get 0 points.</li>
+<li>Copy-paste or similar solutions will be rejected without appeal and will get 0 points.</li>
+</ul>
+</td></tr>
+
+</table>
+
+<h3 align="center">Good luck!</h3>
+
+</body>
+</html>
